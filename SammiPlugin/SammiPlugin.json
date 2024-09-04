@@ -1,6 +1,6 @@
 {
-  "Author": "your name here",
-  "Name": "Sample Plugin",
+  "Author": "Hattu",
+  "Name": "Sammi Webhook Plugin",
   "Punchline": "A short one-liner that shows up in /xlplugins.",
   "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
   "ApplicableVersion": "any",

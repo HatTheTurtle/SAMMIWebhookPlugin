@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Dalamud.Interface.Windowing;
 using ImGuiNET;
 
-namespace SamplePlugin.Windows;
+namespace SammiPlugin.Windows;
 
 public class ConfigWindow : Window, IDisposable
 {
@@ -41,10 +41,10 @@ public class ConfigWindow : Window, IDisposable
     public override void Draw()
     {
         // can't ref a property, so use a local copy
-        var configValue = Configuration.SomePropertyToBeSavedAndWithADefault;
-        if (ImGui.Checkbox("Random Config Bool", ref configValue))
+        var configValue = Configuration.webhookEnable;
+        if (ImGui.Checkbox("Enable xiv_charUpdate", ref configValue))
         {
-            Configuration.SomePropertyToBeSavedAndWithADefault = configValue;
+            Configuration.webhookEnable = configValue;
             // can save immediately on change, if you don't want to provide a "Save and Close" button
             Configuration.Save();
         }

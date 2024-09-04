@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Net.Http;
 using System.Numerics;
 using Dalamud.Interface.Internal;
 using Dalamud.Interface.Utility;
@@ -6,17 +7,17 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
 
-namespace SamplePlugin.Windows;
+namespace SammiPlugin.Windows;
 
 public class MainWindow : Window, IDisposable
 {
-    private string GoatImagePath;
     private Plugin Plugin;
+
 
     // We give this window a hidden ID using ##
     // So that the user will see "My Amazing Window" as window title,
     // but for ImGui the ID is "My Amazing Window##With a hidden ID"
-    public MainWindow(Plugin plugin, string goatImagePath)
+    public MainWindow(Plugin plugin)
         : base("My Amazing Window##With a hidden ID", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         SizeConstraints = new WindowSizeConstraints
@@ -25,34 +26,31 @@ public class MainWindow : Window, IDisposable
             MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
         };
 
-        GoatImagePath = goatImagePath;
+        //GoatImagePath = goatImagePath;
         Plugin = plugin;
     }
 
     public void Dispose() { }
 
-    public override void Draw()
+    public override async void Draw()
     {
-        ImGui.Text($"The random config bool is {Plugin.Configuration.SomePropertyToBeSavedAndWithADefault}");
-
-        if (ImGui.Button("Show Settings"))
+        ImGui.Text($"The random config bool is {Plugin.Configuration.webhookEnable}");
+        ImGui.InputText("SAMMI API Port", ref Plugin.Configuration.Port, 5);
+        if (ImGui.Button("Config"))
         {
             Plugin.ToggleConfigUI();
+        }
+        if (ImGui.Button("Connect"))
+        {
+            Plugin.ToggleDeckStatus();
+        }
+
+        if (ImGui.Button("Trigger Button"))
+        {
+            Plugin.TriggerButton();
         }
 
         ImGui.Spacing();
 
-        ImGui.Text("Have a goat:");
-        var goatImage = Plugin.TextureProvider.GetFromFile(GoatImagePath).GetWrapOrDefault();
-        if (goatImage != null)
-        {
-            ImGuiHelpers.ScaledIndent(55f);
-            ImGui.Image(goatImage.ImGuiHandle, new Vector2(goatImage.Width, goatImage.Height));
-            ImGuiHelpers.ScaledIndent(-55f);
-        }
-        else
-        {
-            ImGui.Text("Image not found.");
-        }
     }
 }
