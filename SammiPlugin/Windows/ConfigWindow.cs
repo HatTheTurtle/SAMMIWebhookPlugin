@@ -14,7 +14,7 @@ public class ConfigWindow : Window, IDisposable
     // and the window ID will always be "###XYZ counter window" for ImGui
     public ConfigWindow(Plugin plugin) : base("A Wonderful Configuration Window###With a constant ID")
     {
-        Flags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
+        Flags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoScrollbar |
                 ImGuiWindowFlags.NoScrollWithMouse;
 
         Size = new Vector2(232, 90);
@@ -41,10 +41,18 @@ public class ConfigWindow : Window, IDisposable
     public override void Draw()
     {
         // can't ref a property, so use a local copy
-        var configValue = Configuration.webhookEnable;
-        if (ImGui.Checkbox("Enable xiv_charUpdate", ref configValue))
+        var charUpdateValue = Configuration.charUpdateEnable;
+        if (ImGui.Checkbox("Enable xiv_charUpdate", ref charUpdateValue))
         {
-            Configuration.webhookEnable = configValue;
+            Configuration.charUpdateEnable = charUpdateValue;
+            // can save immediately on change, if you don't want to provide a "Save and Close" button
+            Configuration.Save();
+        }
+
+        var flyTextUpdateValue = Configuration.flyTextEnable;
+        if (ImGui.Checkbox("Enable xiv_flyTextUpdate", ref flyTextUpdateValue))
+        {
+            Configuration.flyTextEnable = flyTextUpdateValue;
             // can save immediately on change, if you don't want to provide a "Save and Close" button
             Configuration.Save();
         }

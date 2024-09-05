@@ -34,7 +34,7 @@ public class MainWindow : Window, IDisposable
 
     public override async void Draw()
     {
-        ImGui.Text($"The random config bool is {Plugin.Configuration.webhookEnable}");
+        ImGui.Text($"The random config bool is {Plugin.Configuration.charUpdateEnable}");
         ImGui.InputText("SAMMI API Port", ref Plugin.Configuration.Port, 5);
         if (ImGui.Button("Config"))
         {

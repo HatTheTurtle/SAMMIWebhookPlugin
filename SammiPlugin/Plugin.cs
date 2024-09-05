@@ -28,7 +28,7 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] internal static ICommandManager CommandManager { get; private set; } = null!;
 
-    private const string CommandName = "/pmycommand";
+    private const string CommandName = "/psammi";
 
     public Configuration Configuration { get; init; }
 
@@ -181,7 +181,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void OnFrameworkUpdate(IFramework Framework)
     {
-        if (Service.ClientState.LocalPlayer != null && Configuration.webhookEnable)
+        if (Service.ClientState.LocalPlayer != null && Configuration.charUpdateEnable)
         {
             //Service.PluginLog.Debug("working");
             //Access data in main thread instead of in an async method
@@ -193,14 +193,17 @@ public sealed class Plugin : IDalamudPlugin
 
     private void onFlyTextCreated (ref FlyTextKind kind, ref int val1, ref int val2, ref SeString text1, ref SeString text2, ref uint color, ref uint icon, ref uint damageTypeIcon, ref float yOffset, ref bool handled)
     {
-        //PluginClient.Timeout = TimeSpan.FromMilliseconds(200);
-        string values = "{\n\"trigger\":\"" + flyTextWebhookTrigger + "\",\n\"kind\":\"" + kind + "\",\n\"val1\":\""+val1+"\",\n\"val2\":\""+val2+"\",\n\"text1\":\""+text1+"\",\n\"text2\":\""+text2+"\"\n}";
-        //string values = "{\n\"trigger\":\"" + flyTextWebhookTrigger + "\",\n\"kind\":\"" + kind + "\",\n\"text1\":\""+text1+"\"\n}";
+        if (Service.ClientState.LocalPlayer!= null && Configuration.flyTextEnable)
+        {
+            //PluginClient.Timeout = TimeSpan.FromMilliseconds(200);
+            string values = "{\n\"trigger\":\"" + flyTextWebhookTrigger + "\",\n\"kind\":\"" + kind + "\",\n\"val1\":\"" + val1 + "\",\n\"val2\":\"" + val2 + "\",\n\"text1\":\"" + text1 + "\",\n\"text2\":\"" + text2 + "\"\n}";
+            //string values = "{\n\"trigger\":\"" + flyTextWebhookTrigger + "\",\n\"kind\":\"" + kind + "\",\n\"text1\":\""+text1+"\"\n}";
 
-        var content = new StringContent (values);
-        Service.PluginLog.Debug(values);
-        sendWebhook(content);
-        //PluginClient.Timeout = TimeSpan.FromMilliseconds(100);
+            var content = new StringContent(values);
+            Service.PluginLog.Debug(values);
+            sendWebhook(content);
+            //PluginClient.Timeout = TimeSpan.FromMilliseconds(100);
+        }
     }
 
     public async void sendWebhook (StringContent content)

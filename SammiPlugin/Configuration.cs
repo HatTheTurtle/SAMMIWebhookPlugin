@@ -11,7 +11,8 @@ public class Configuration : IPluginConfiguration
     public int Version { get; set; } = 0;
 
     public bool IsConfigWindowMovable { get; set; } = true;
-    public bool webhookEnable { get; set; } = false;
+    public bool charUpdateEnable { get; set; } = false;
+    public bool flyTextEnable { get; set; } = false;
     public string Port = "9450";
 
     // the below exist just to make saving less cumbersome
