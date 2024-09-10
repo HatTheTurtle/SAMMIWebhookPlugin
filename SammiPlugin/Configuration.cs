@@ -13,6 +13,7 @@ public class Configuration : IPluginConfiguration
     public bool IsConfigWindowMovable { get; set; } = true;
     public bool charUpdateEnable { get; set; } = false;
     public bool flyTextEnable { get; set; } = false;
+    public bool actionUpdateEnable { get; set; } = false;
     public string Port = "9450";
 
     // the below exist just to make saving less cumbersome

@@ -16,9 +16,10 @@ namespace SammiPlugin
         [PluginService] public static IClientState ClientState {get; private set; }
         [PluginService] public static ICondition Condition {get; private set; }
         [PluginService] public static IFramework Framework {get; private set; }
-
+        [PluginService] public static ISigScanner SigScanner {get; private set; }
+        [PluginService] public static IDataManager DataManager {get; private set; }
         //User IGameInteropProvider to hook into process and grab action info
-        //[PluginService] public static IGameInteropProvider GameInteropProvider {get; private set; }
+        [PluginService] public static IGameInteropProvider GameInteropProvider {get; private set; }
         //or just use flytext and do things poorly lol
         [PluginService] public static IFlyTextGui FlyTextGui {get; private set; }
     }
