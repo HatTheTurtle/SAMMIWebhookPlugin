@@ -1,12 +1,12 @@
 {
   "Author": "Hattu",
-  "Name": "Sammi Webhook Plugin",
+  "Name": "SAMMI Webhook Plugin",
   "Punchline": "A short one-liner that shows up in /xlplugins.",
   "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
   "ApplicableVersion": "any",
   "Tags": [
-    "sample",
-    "plugin",
-    "goats"
+    "SAMMI",
+    "webhook",
+    "stream"
   ]
 }

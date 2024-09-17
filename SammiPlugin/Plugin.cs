@@ -41,6 +41,8 @@ public sealed class Plugin : IDalamudPlugin
     private ConfigWindow ConfigWindow { get; init; }
     private IFramework Framework { get; init; }
 
+    uint prevHp = 0, prevMaxHp = 0, prevMp = 0, prevMaxMp = 0;
+
     private static HttpClient PluginClient = new HttpClient(new HttpClientHandler
     {
         UseProxy = false
@@ -77,7 +79,8 @@ public sealed class Plugin : IDalamudPlugin
         System.Net.ServicePointManager.Expect100Continue = false;
 
         Hooks = new(this);
-        flyText = [FlyTextKind.Buff, FlyTextKind.BuffFading, FlyTextKind.Damage, FlyTextKind.DamageCrit, FlyTextKind.DamageCritDh, FlyTextKind.DamageDh];
+        flyText = [FlyTextKind.Buff, FlyTextKind.BuffFading, FlyTextKind.Damage, FlyTextKind.DamageCrit, FlyTextKind.DamageCritDh, FlyTextKind.DamageDh,
+        FlyTextKind.Debuff, FlyTextKind.DebuffFading];
 
         Service.ClientState.Login += OnLogin;
         Service.ClientState.Logout += OnLogout;
@@ -88,7 +91,6 @@ public sealed class Plugin : IDalamudPlugin
 
     public void OnLogin()
     {
-
     }
 
     public void OnLogout()
@@ -126,15 +128,31 @@ public sealed class Plugin : IDalamudPlugin
 
     public void OnFrameworkUpdate(IFramework Framework)
     {
-        if (Service.ClientState.LocalPlayer != null && Configuration.charUpdateEnable)
+        if (Configuration.charUpdateEnable && Service.ClientState.LocalPlayer != null )           
         {
-            //Service.PluginLog.Debug("working");
-            //Access data in main thread instead of in an async method
-            string values = "{\n\"trigger\":\"" + charWebhookTrigger + "\",\n\"name\":\"" + Service.ClientState.LocalPlayer.Name + "\",\n\"hp\":\"" + Service.ClientState.LocalPlayer.CurrentHp + "\"\n}";
-            var content = new StringContent(values);
-            //Short timeout duration, character data is constantly changing so it's ok if some updates get dropped
-            //Also prevents updates from being received out of order
-            Sammi.sendWebhook(uri!, content, 100, false);
+            //Only send a new webhook if the data has changed
+            if (Service.ClientState.LocalPlayer.CurrentHp != prevHp ||
+                Service.ClientState.LocalPlayer.MaxHp != prevMaxHp ||
+                Service.ClientState.LocalPlayer.CurrentMp != prevMp ||
+                Service.ClientState.LocalPlayer.MaxMp != prevMaxMp)
+            {
+                prevHp = Service.ClientState.LocalPlayer.CurrentHp;
+                prevMaxHp = Service.ClientState.LocalPlayer.MaxHp;
+                prevMp = Service.ClientState.LocalPlayer.CurrentMp;
+                prevMaxMp = Service.ClientState.LocalPlayer.MaxMp;
+
+                //Access data in main thread instead of in an async method
+                string values = "{\n\"trigger\":\"" + charWebhookTrigger +
+                    "\",\n\"name\":\"" + Service.ClientState.LocalPlayer.Name +
+                    "\",\n\"maxHp\":\"" + Service.ClientState.LocalPlayer.MaxHp +
+                    "\",\n\"hp\":\"" + Service.ClientState.LocalPlayer.CurrentHp +
+                    "\",\n\"maxMp\":\"" + Service.ClientState.LocalPlayer.MaxMp +
+                    "\",\n\"mp\":\"" + Service.ClientState.LocalPlayer.CurrentMp + "\"\n}";
+                var content = new StringContent(values);
+                //Short timeout duration, character data is constantly changing so it's ok if some updates get dropped
+                //Also prevents updates from being received out of order
+                Sammi.sendWebhook(uri!, content, 300, false);
+            }
         }
     }
 
@@ -146,7 +164,12 @@ public sealed class Plugin : IDalamudPlugin
             {
                 //Consider removing some fields since some seem to be unused by the game?
                 //string values = "{\n\"trigger\":\"" + flyTextWebhookTrigger + "\",\n\"kind\":\"" + kind + "\",\n\"text1\":\""+text1+"\"\n}";
-                string values = "{\n\"trigger\":\"" + flyTextWebhookTrigger + "\",\n\"kind\":\"" + kind + "\",\n\"val1\":\"" + val1 + "\",\n\"val2\":\"" + val2 + "\",\n\"text1\":\"" + text1 + "\",\n\"text2\":\"" + text2 + "\"\n}";
+                string values = "{\n\"trigger\":\"" + flyTextWebhookTrigger + 
+                    "\",\n\"kind\":\"" + kind + 
+                    "\",\n\"val1\":\"" + val1 + 
+                    "\",\n\"val2\":\"" + val2 + 
+                    "\",\n\"text1\":\"" + text1 + 
+                    "\",\n\"text2\":\"" + text2 + "\"\n}";
                 var content = new StringContent(values);
                 Service.PluginLog.Debug(values);
                 //Longer timeout duration since each action is only sent once, need to make sure it doesn't drop

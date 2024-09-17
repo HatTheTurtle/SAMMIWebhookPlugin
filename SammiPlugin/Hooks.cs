@@ -45,7 +45,9 @@ public sealed unsafe class Hooks : IDisposable
             //TODO: debug Unhandled Native Exception from CachedActions[actionId]
             //and add \"name\":\"" + action.Name + "\"\n}";
             //var action = CachedActions[actionId];
-            string values = "{\n\"trigger\":\"" + "xiv_actionUpdate" + "\",\n\"actionType\":\"" + at + "\",\n\"actionID\":\"" + actionId + "\"\n}";
+            string values = "{\n\"trigger\":\"" + "xiv_actionUpdate" + 
+                "\",\n\"actionType\":\"" + at + 
+                "\",\n\"actionID\":\"" + actionId + "\"\n}";
             var content = new StringContent(values);
             Service.PluginLog.Debug(values);
             //Longer timeout duration since each action is only sent once, need to make sure it doesn't drop

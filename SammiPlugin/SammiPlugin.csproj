@@ -4,8 +4,8 @@
 
   <PropertyGroup>
     <Version>0.0.0.1</Version>
-    <Description>A sample plugin.</Description>
-    <PackageProjectUrl>https://github.com/goatcorp/SamplePlugin</PackageProjectUrl>
+    <Description>A plugin to send FFXIV game information to SAMMI via webhook.</Description>
+    <PackageProjectUrl>https://github.com/HatTheTurtle/SAMMIWebhookPlugin</PackageProjectUrl>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
