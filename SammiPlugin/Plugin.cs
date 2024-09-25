@@ -140,7 +140,7 @@ public sealed class Plugin : IDalamudPlugin
                     "\",\n\"text1\":\"" + text1 + 
                     "\",\n\"text2\":\"" + text2 + "\"\n}";
                 var content = new StringContent(values);
-                Service.PluginLog.Debug(values + " pword: " + Configuration.password);
+                Service.PluginLog.Debug(values);
                 //Longer timeout duration since each action is only sent once, need to make sure it doesn't drop
                 //Updates may arrive out of order if timeout duration is too long
                 Sammi.sendWebhook(Configuration.address, Configuration.password, content, 1000, Configuration.debug);
