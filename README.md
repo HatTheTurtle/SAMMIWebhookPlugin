@@ -1,6 +1,7 @@
 # SAMMI Webhook Plugin
 
-https://github.com/user-attachments/assets/ac61a657-abfd-4fab-be13-769d7b1301f0
+https://github.com/user-attachments/assets/0e64db77-9c20-477e-b7e4-ce06bfb1b822
+
 Plugin for sending game information to SAMMI via webhook, allowing for automated OBS actions based on in-game events. This plugin only handles the sending of webhooks, the specific reactions (e.g., animations/sound bytes played, stream interactions, etc.) are created independently within [SAMMI](https://sammi.solutions/) and [OBS](https://obsproject.com/).
 
 ## Currently Implemented Features
