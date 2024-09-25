@@ -13,10 +13,13 @@ public class ConfigWindow : Window, IDisposable
     // We give this window a constant ID using ###
     // This allows for labels being dynamic, like "{FPS Counter}fps###XYZ counter window",
     // and the window ID will always be "###XYZ counter window" for ImGui
-    public ConfigWindow(Plugin plugin) : base("SAMMI Plugin###psammi")
+    public ConfigWindow(Plugin plugin) : base("SAMMI Plugin")
     {
         Flags = ImGuiWindowFlags.NoScrollbar;
-        Size = new Vector2(300, 200);
+        SizeConstraints = new WindowSizeConstraints
+        {
+            MinimumSize = new Vector2(380, 220)
+        };
         Configuration = plugin.Configuration;
         System.Net.ServicePointManager.Expect100Continue = false;
     }
@@ -26,26 +29,27 @@ public class ConfigWindow : Window, IDisposable
     public override void PreDraw()
     {
         // Flags must be added or removed before Draw() is being called, or they won't apply
-        if (Configuration.IsConfigWindowMovable)
-        {
-            Flags &= ~ImGuiWindowFlags.NoMove;
-        }
-        else
-        {
-            Flags |= ImGuiWindowFlags.NoMove;
-        }
     }
 
     public override void Draw()
     {
-        ImGui.InputText("SAMMI API Port", ref Configuration.Port, 5);
+        //Might be unnecessary, not sure of cases where the default isn't used
+        //Port can be changed but not recommended by SAMMI docs
+        if (ImGui.InputText("SAMMI API Address", ref Configuration.address, 128))
+        {
+            Configuration.Save();
+        };
+        if (ImGui.InputText("Password (optional)", ref Configuration.password, 512, ImGuiInputTextFlags.Password))
+        {
+            Configuration.Save();
+        };
         if (ImGui.Button("Test Connection (Popup Notification)"))
         {
             string values = "{\n\"request\": \"popupMessage\",\n\"message\": \"FFXIV SAMMI Plugin is working!\"\n}";
             var content = new StringContent(values);
             try
             {
-                Sammi.sendAPI("http://127.0.0.1:" + Configuration.Port, content, 100000, true);
+                Sammi.sendAPI(Configuration.address, Configuration.password, content, 100000, Configuration.debug);
                 Service.PluginLog.Debug(values);
             }
             catch (Exception e)
@@ -73,6 +77,10 @@ public class ConfigWindow : Window, IDisposable
         if (ImGui.Checkbox("Enable xiv_actionUpdate", ref actionUpdateValue))
         {
             Configuration.actionUpdateEnable = actionUpdateValue;
+            Configuration.Save();
+        }
+        if (ImGui.Checkbox("Enable error messages", ref Configuration.debug))
+        {
             Configuration.Save();
         }
     }

@@ -1,29 +1,14 @@
 using Dalamud.Game.Command;
-using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.IoC;
 using Dalamud.Plugin;
-using System.IO;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Hooking;
 using SammiPlugin.Windows;
 using System.Net.Http;
 using System;
-using System.Threading.Tasks;
-using System.Text.Json;
-using System.Text.Encodings;
-using System.Collections.Generic;
-using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Dalamud.Game.Gui.FlyText;
-using System.Threading;
-using static FFXIVClientStructs.FFXIV.Client.Game.ActionManager;
-using System.Transactions;
-using Lumina.Excel.GeneratedSheets;
-using Action = Lumina.Excel.GeneratedSheets.Action;
 using System.Linq;
 
 namespace SammiPlugin;
@@ -41,20 +26,19 @@ public sealed class Plugin : IDalamudPlugin
     private ConfigWindow ConfigWindow { get; init; }
     private IFramework Framework { get; init; }
 
-    uint prevHp = 0, prevMaxHp = 0, prevMp = 0, prevMaxMp = 0;
-
     private static HttpClient PluginClient = new HttpClient(new HttpClientHandler
     {
         UseProxy = false
     });
-    private string? uri;
-    private string charWebhookTrigger = "xiv_charUpdate";
-    private string flyTextWebhookTrigger = "xiv_flyTextUpdate";
-    private string actionWebhookTrigger = "xiv_actionUpdate";
+    public string charWebhookTrigger = "xiv_charUpdate";
+    public string flyTextWebhookTrigger = "xiv_flyTextUpdate";
+    public string actionWebhookTrigger = "xiv_actionUpdate";
+
+    uint prevHp = 0, prevMaxHp = 0, prevMp = 0, prevMaxMp = 0;
 
     public Hooks Hooks { get; }
     //Array of FlyTextKinds that should be acted upon/sent to SAMMI
-    //TODO: Add to config window to let users decide which kinds to listen for
+    //TODO?: Add to config window to let users decide which kinds to listen for
     FlyTextKind[] flyText;
 
     public Plugin()
@@ -74,28 +58,15 @@ public sealed class Plugin : IDalamudPlugin
             HelpMessage = "Sends various types of game data to SAMMI via webhook. /psammi to configure."
         });
 
-        //SAMMI Webhook URI, default port 9450
-        uri = "http://127.0.0.1:" + Configuration.Port;
         System.Net.ServicePointManager.Expect100Continue = false;
 
         Hooks = new(this);
         flyText = [FlyTextKind.Buff, FlyTextKind.BuffFading, FlyTextKind.Damage, FlyTextKind.DamageCrit, FlyTextKind.DamageCritDh, FlyTextKind.DamageDh,
         FlyTextKind.Debuff, FlyTextKind.DebuffFading];
 
-        Service.ClientState.Login += OnLogin;
-        Service.ClientState.Logout += OnLogout;
         Service.Condition.ConditionChange += OnConditionChange;
         Service.Framework.Update += OnFrameworkUpdate;
         Service.FlyTextGui.FlyTextCreated += OnFlyTextCreated;
-    }
-
-    public void OnLogin()
-    {
-    }
-
-    public void OnLogout()
-    {
-
     }
 
     public void Dispose()
@@ -104,8 +75,6 @@ public sealed class Plugin : IDalamudPlugin
         ConfigWindow.Dispose();
         CommandManager.RemoveHandler(CommandName);
 
-        Service.ClientState.Login -= OnLogin;
-        Service.ClientState.Logout -= OnLogout; 
         Service.Condition.ConditionChange -= OnConditionChange;
         Service.Framework.Update -= OnFrameworkUpdate;
         Service.FlyTextGui.FlyTextCreated -= OnFlyTextCreated;
@@ -151,7 +120,7 @@ public sealed class Plugin : IDalamudPlugin
                 var content = new StringContent(values);
                 //Short timeout duration, character data is constantly changing so it's ok if some updates get dropped
                 //Also prevents updates from being received out of order
-                Sammi.sendWebhook(uri!, content, 300, false);
+                Sammi.sendWebhook(Configuration.address, Configuration.password, content, 300, Configuration.debug);
             }
         }
     }
@@ -171,10 +140,10 @@ public sealed class Plugin : IDalamudPlugin
                     "\",\n\"text1\":\"" + text1 + 
                     "\",\n\"text2\":\"" + text2 + "\"\n}";
                 var content = new StringContent(values);
-                Service.PluginLog.Debug(values);
+                Service.PluginLog.Debug(values + " pword: " + Configuration.password);
                 //Longer timeout duration since each action is only sent once, need to make sure it doesn't drop
                 //Updates may arrive out of order if timeout duration is too long
-                Sammi.sendWebhook(uri, content, 3000, true);
+                Sammi.sendWebhook(Configuration.address, Configuration.password, content, 1000, Configuration.debug);
             }
         }
     }

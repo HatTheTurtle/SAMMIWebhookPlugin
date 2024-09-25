@@ -7,6 +7,8 @@ using actionType = FFXIVClientStructs.FFXIV.Client.Game.ActionType;
 using Action = Lumina.Excel.GeneratedSheets.Action;
 using System.Linq;
 using System.Net.Http;
+using System.Numerics;
+using ImGuizmoNET;
 
 
 namespace SammiPlugin;
@@ -14,62 +16,44 @@ namespace SammiPlugin;
 public sealed unsafe class Hooks : IDisposable
 {
     private IDataManager dataManager => Service.DataManager;
-    public delegate bool UseActionDelegate(ActionManager* manager, actionType actionType, uint actionId, ulong targetId, uint extraParam, ActionManager.UseActionMode mode, uint comboRouteId, bool* outOptAreaTargeted);
-    public Hook<UseActionDelegate> UseActionHook = null!;
-    private Dictionary<uint, Action> CachedActions;
+    public delegate bool UseActionLocationDelegate(ActionManager* manager, actionType actionType, uint actionId, ulong targetId, Vector3* location, uint extraParam);
+    public Hook<UseActionLocationDelegate> UseActionLocationHook = null!;
+    Plugin plugin;
     Configuration Configuration;
 
     public Hooks(Plugin plugin)
     {
-        UseActionHook = Service.GameInteropProvider.HookFromAddress<UseActionDelegate>(ActionManager.MemberFunctionPointers.UseAction, UseActionDetour);
-        CachedActions = new Dictionary<uint, Action>();
-        CacheActions();
-        UseActionHook.Enable();
+
+        UseActionLocationHook = Service.GameInteropProvider.HookFromAddress<UseActionLocationDelegate>(ActionManager.MemberFunctionPointers.UseActionLocation, UseActionLocationDetour);
+        UseActionLocationHook.Enable();
         Configuration = plugin.Configuration;
+        this.plugin = plugin;
     } 
 
     public void Dispose()
     {
-        UseActionHook.Dispose();
+        UseActionLocationHook.Dispose();
     }
-    
-    public bool UseActionDetour(ActionManager* manager, actionType at, uint actionId, ulong targetId, uint extraParam, ActionManager.UseActionMode mode, uint comboRouteId, bool* optOutAreaTargeted)
+
+    public bool UseActionLocationDetour(ActionManager* manager, actionType at, uint actionId, ulong targetId, Vector3* location, uint extraParam)
     {
-        bool ret = UseActionHook.Original(manager, at, actionId, targetId, extraParam, mode, comboRouteId, optOutAreaTargeted);
+        bool ret = UseActionLocationHook.Original(manager, at, actionId, targetId, location, extraParam);
         if (Configuration.actionUpdateEnable)
         {
             if (at != ActionType.Action)
                 return ret;
             //if (!Service.Condition[ConditionFlag.InCombat])
             //    return ret;
-            //TODO: debug Unhandled Native Exception from CachedActions[actionId]
-            //and add \"name\":\"" + action.Name + "\"\n}";
-            //var action = CachedActions[actionId];
-            string values = "{\n\"trigger\":\"" + "xiv_actionUpdate" + 
-                "\",\n\"actionType\":\"" + at + 
-                "\",\n\"actionID\":\"" + actionId + "\"\n}";
+            string values = "{\n\"trigger\":\"" + this.plugin.actionWebhookTrigger +
+                "\",\n\"actionType\":\"" + at +
+                "\",\n\"actionID\":\"" + actionId +
+                "\",\n\"actionName\":\"" + Service.DataManager.Excel.GetSheet<Action>()!.GetRow(actionId)!.Name.RawString + "\"\n}";
             var content = new StringContent(values);
             Service.PluginLog.Debug(values);
             //Longer timeout duration since each action is only sent once, need to make sure it doesn't drop
             //Updates may arrive out of order if timeout duration is too long
-            Sammi.sendWebhook("http://127.0.0.1:9450", content, 1000, true);
+            Sammi.sendWebhook(Configuration.address, Configuration.password, content, 1000, Configuration.debug);
         }
         return ret;
-    }
-
-    private void CacheActions()
-    {
-        CachedActions = new();
-        var actions = Service.DataManager.GetExcelSheet<Action>()!.
-            Where(a => !a.IsPvP && a.ClassJob.Value?.Unknown6 > 0 && a.IsPlayerAction && (a.ActionCategory.Row == 4 || a.Recast100ms > 100)).ToList();
-        foreach (var action in actions)
-        {
-            CachedActions[action.RowId] = action;
-        }
-        var roleActions = Service.DataManager.GetExcelSheet<Action>()!.Where(a => a.IsRoleAction && a.ClassJobLevel != 0).ToList();
-        foreach (var roleAction in roleActions)
-        {
-            CachedActions[roleAction.RowId] = roleAction;
-        }
     }
 }

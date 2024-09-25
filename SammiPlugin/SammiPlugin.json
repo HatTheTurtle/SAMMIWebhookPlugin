@@ -1,12 +1,15 @@
 {
-  "Author": "Hattu",
-  "Name": "SAMMI Webhook Plugin",
-  "Punchline": "A short one-liner that shows up in /xlplugins.",
-  "Description": "A description that shows up in /xlplugins. List any major slash-command(s).",
-  "ApplicableVersion": "any",
-  "Tags": [
-    "SAMMI",
-    "webhook",
-    "stream"
-  ]
+    "Author": "Hattu",
+    "Name": "SAMMI Webhook Plugin",
+    "Punchline": "OBS automation based on game events via SAMMI webhooks",
+    "Description": "Sends game data SAMMI via webhook, allowing users to automate OBS actions such as playing effects, transitions, sounds, etc. based on in-game events.\nRequires SAMMI and OBS to function. See https://sammi.solutions or the plugin's readme on GitHub.\n/psammi to configure.",
+    "ApplicableVersion": "any",
+    "RepoUrl": "https://github.com/HatTheTurtle/SAMMIWebhookPlugin",
+    "Tags": [
+        "SAMMI",
+        "webhook",
+        "stream",
+        "OBS",
+        "Other"
+    ]
 }
