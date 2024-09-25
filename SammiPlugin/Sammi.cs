@@ -7,7 +7,6 @@ using Dalamud.Game.Text.SeStringHandling;
 
 namespace SammiPlugin;
 
-
 public static class Sammi
 {
     private static HttpClient httpClient = new HttpClient();

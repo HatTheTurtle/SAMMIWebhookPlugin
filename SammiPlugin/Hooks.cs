@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 using Dalamud.Hooking;
 using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using actionType = FFXIVClientStructs.FFXIV.Client.Game.ActionType;
 using Action = Lumina.Excel.GeneratedSheets.Action;
-using System.Linq;
 using System.Net.Http;
 using System.Numerics;
-using ImGuizmoNET;
 
 
 namespace SammiPlugin;
@@ -23,7 +20,6 @@ public sealed unsafe class Hooks : IDisposable
 
     public Hooks(Plugin plugin)
     {
-
         UseActionLocationHook = Service.GameInteropProvider.HookFromAddress<UseActionLocationDelegate>(ActionManager.MemberFunctionPointers.UseActionLocation, UseActionLocationDetour);
         UseActionLocationHook.Enable();
         Configuration = plugin.Configuration;
