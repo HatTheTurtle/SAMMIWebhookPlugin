@@ -10,6 +10,7 @@ public class Configuration : IPluginConfiguration
     public bool charUpdateEnable { get; set; } = false;
     public bool flyTextEnable { get; set; } = false;
     public bool actionUpdateEnable { get; set; } = false;
+    public bool conditionUpdateEnable { get; set; } = false;
     //SAMMI Webhook URI, default port 9450
     public string address = "http://127.0.0.1:9450";
     public string password = "";

@@ -33,6 +33,7 @@ public sealed class Plugin : IDalamudPlugin
     public string charWebhookTrigger = "xiv_charUpdate";
     public string flyTextWebhookTrigger = "xiv_flyTextUpdate";
     public string actionWebhookTrigger = "xiv_actionUpdate";
+    public string conditionWebhookTrigger = "xiv_conditionUpdate";
 
     uint prevHp = 0, prevMaxHp = 0, prevMp = 0, prevMaxMp = 0;
 
@@ -93,6 +94,9 @@ public sealed class Plugin : IDalamudPlugin
         //TODO: Send condition info to SAMMI
         //Might be unreliable, e.g., "Unconscious" should mean dead but is
         //used for a bunch of different stuff too
+        string values = "{\n\"trigger\":\"" + conditionWebhookTrigger +
+            "\",\n\"condition\":\"" + flag + "\"\n}";
+        Sammi.sendWebhook(Configuration.address, Configuration.password, values, 300, Configuration.debug);
     }
 
     public void OnFrameworkUpdate(IFramework Framework)
@@ -117,10 +121,9 @@ public sealed class Plugin : IDalamudPlugin
                     "\",\n\"hp\":\"" + Service.ClientState.LocalPlayer.CurrentHp +
                     "\",\n\"maxMp\":\"" + Service.ClientState.LocalPlayer.MaxMp +
                     "\",\n\"mp\":\"" + Service.ClientState.LocalPlayer.CurrentMp + "\"\n}";
-                var content = new StringContent(values);
                 //Short timeout duration, character data is constantly changing so it's ok if some updates get dropped
                 //Also prevents updates from being received out of order
-                Sammi.sendWebhook(Configuration.address, Configuration.password, content, 300, Configuration.debug);
+                Sammi.sendWebhook(Configuration.address, Configuration.password, values, 300, Configuration.debug);
             }
         }
     }
@@ -139,11 +142,10 @@ public sealed class Plugin : IDalamudPlugin
                     "\",\n\"val2\":\"" + val2 + 
                     "\",\n\"text1\":\"" + text1 + 
                     "\",\n\"text2\":\"" + text2 + "\"\n}";
-                var content = new StringContent(values);
-                Service.PluginLog.Debug(values);
+
                 //Longer timeout duration since each action is only sent once, need to make sure it doesn't drop
                 //Updates may arrive out of order if timeout duration is too long
-                Sammi.sendWebhook(Configuration.address, Configuration.password, content, 1000, Configuration.debug);
+                Sammi.sendWebhook(Configuration.address, Configuration.password, values, 1000, Configuration.debug);
             }
         }
     }

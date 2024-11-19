@@ -15,7 +15,7 @@ public static class Sammi
 	{
 	}
 
-    public static async void sendAPI (string uri, string password, StringContent content, int timeout, bool debug)
+    public static async void sendAPI (string uri, string password, String values, int timeout, bool debug)
     {
         try
         {
@@ -27,13 +27,17 @@ public static class Sammi
             {
                 httpClient.DefaultRequestHeaders.Authorization = null;
             }
+
+            var content = new StringContent(values);
             using var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(timeout));
             using var response = await httpClient.PostAsync(uri + "/api", content, cts.Token);
 
             if (debug)
             {
+                Service.PluginLog.Debug(values);
                 var responseString = response.ToString();
+                Service.PluginLog.Debug(responseString);
                 if (responseString.Contains("StatusCode: 401"))
                 {
                     Service.ChatGui.Print(new Dalamud.Game.Text.XivChatEntry
@@ -49,6 +53,7 @@ public static class Sammi
         {
             if (debug)
             {
+                Service.PluginLog.Debug(values);
                 Service.ChatGui.Print(new Dalamud.Game.Text.XivChatEntry
                 {
                     Type = Dalamud.Game.Text.XivChatType.Notice,
@@ -75,7 +80,7 @@ public static class Sammi
                 Service.ChatGui.Print(new Dalamud.Game.Text.XivChatEntry
                 {
                     Type = Dalamud.Game.Text.XivChatType.Notice,
-                    Message = "SAMMI Webhook Plugin: Task cancelled, check address in /psammi, or the request may be timing out"
+                    Message = "SAMMI Webhook Plugin: Task cancelled " + timeout + "ms, check address in /psammi, or the request may be timing out"
                 });
             }
         }
@@ -83,7 +88,7 @@ public static class Sammi
         {
             if (debug)
             {
-                Service.PluginLog.Debug(e, "error, " + content.ToString()); 
+                Service.PluginLog.Debug(e, "error, " + values); 
                 Service.ChatGui.Print(new Dalamud.Game.Text.XivChatEntry
                 {
                     Type = Dalamud.Game.Text.XivChatType.Notice,
@@ -94,7 +99,7 @@ public static class Sammi
         }
     }
 
-    public static async void sendWebhook(string uri, string password, StringContent content, int timeout, bool debug)
+    public static async void sendWebhook(string uri, string password, String values, int timeout, bool debug)
     {
         try
         {
@@ -106,11 +111,15 @@ public static class Sammi
             {
                 httpClient.DefaultRequestHeaders.Authorization = null;
             }
+
+            var content = new StringContent(values);
             using var cts = new CancellationTokenSource();
             cts.CancelAfter(TimeSpan.FromMilliseconds(timeout));
             using var response = await httpClient.PostAsync(uri + "/webhook", content, cts.Token);
+
             if (debug)
             {
+                Service.PluginLog.Debug(values);
                 var responseString = response.ToString();
                 Service.PluginLog.Debug(responseString);
                 if (responseString.Contains("StatusCode: 401"))
@@ -153,7 +162,7 @@ public static class Sammi
                 Service.ChatGui.Print(new Dalamud.Game.Text.XivChatEntry
                 {
                     Type = Dalamud.Game.Text.XivChatType.Notice,
-                    Message = "SAMMI Webhook Plugin: Task cancelled, check address in /psammi, or the request may be timing out"
+                    Message = "SAMMI Webhook Plugin: Task cancelled after " + timeout + "ms, check address in /psammi, or the request may be timing out"
                 });
             }
         }
@@ -161,7 +170,7 @@ public static class Sammi
         {
             if (debug)
             {
-                Service.PluginLog.Debug(e, "error, " + content.ToString());
+                Service.PluginLog.Debug(e, "error, " + values);
                 Service.ChatGui.Print(new Dalamud.Game.Text.XivChatEntry
                 {
                     Type = Dalamud.Game.Text.XivChatType.Notice,

@@ -18,7 +18,7 @@ public class ConfigWindow : Window, IDisposable
         Flags = ImGuiWindowFlags.NoScrollbar;
         SizeConstraints = new WindowSizeConstraints
         {
-            MinimumSize = new Vector2(380, 220)
+            MinimumSize = new Vector2(380, 250)
         };
         Configuration = plugin.Configuration;
         System.Net.ServicePointManager.Expect100Continue = false;
@@ -46,10 +46,9 @@ public class ConfigWindow : Window, IDisposable
         if (ImGui.Button("Test Connection (Popup Notification)"))
         {
             string values = "{\n\"request\": \"popupMessage\",\n\"message\": \"FFXIV SAMMI Plugin is working!\"\n}";
-            var content = new StringContent(values);
             try
             {
-                Sammi.sendAPI(Configuration.address, Configuration.password, content, 100000, Configuration.debug);
+                Sammi.sendAPI(Configuration.address, Configuration.password, values, 100000, Configuration.debug);
                 Service.PluginLog.Debug(values);
             }
             catch (Exception e)
@@ -79,7 +78,13 @@ public class ConfigWindow : Window, IDisposable
             Configuration.actionUpdateEnable = actionUpdateValue;
             Configuration.Save();
         }
-        if (ImGui.Checkbox("Enable error messages", ref Configuration.debug))
+        var conditionUpdateValue = Configuration.conditionUpdateEnable;
+        if (ImGui.Checkbox("Enable xiv_conditionUpdate", ref conditionUpdateValue))
+        {
+            Configuration.conditionUpdateEnable = conditionUpdateValue;
+            Configuration.Save();
+        }
+        if (ImGui.Checkbox("Enable error/debug messages", ref Configuration.debug))
         {
             Configuration.Save();
         }
